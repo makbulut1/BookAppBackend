@@ -1,0 +1,79 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BookStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  annotations Annotation[]
+  reviews     UserReview[]
+  wishlist    Book[]       @relation("UserWishlist")
+}
+
+model Book {
+  id            String     @id @default(uuid())
+  title         String
+  author        String
+  coverImage    String?
+  isSystemImage Boolean    @default(false)
+  coverColor    String?
+  price         String?
+  category      String?
+  pdfUrl        String?
+  pages         String[]
+  pageCount     Int?
+  metadata      Json?
+  status        BookStatus @default(UPLOADING)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  reviews      UserReview[]
+  annotations  Annotation[]
+  wishlistedBy User[]       @relation("UserWishlist")
+}
+
+model Annotation {
+  id         String   @id @default(uuid())
+  bookId     String
+  userId     String
+  rangeStart Int
+  rangeEnd   Int
+  color      String   @default("yellow")
+  note       String?
+  pageNumber Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  book Book @relation(fields: [bookId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
+model UserReview {
+  id        String   @id @default(uuid())
+  bookId    String
+  userId    String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+
+  book Book @relation(fields: [bookId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
