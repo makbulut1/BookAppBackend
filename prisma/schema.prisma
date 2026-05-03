@@ -8,62 +8,288 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────
+
 enum BookStatus {
+  DRAFT
   UPLOADING
   PROCESSING
-  READY
+  REVIEW
+  PUBLISHED
+  ARCHIVED
   FAILED
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  annotations Annotation[]
-  reviews     UserReview[]
-  wishlist    Book[]       @relation("UserWishlist")
+enum UserRole {
+  READER
+  AUTHOR
+  ADMIN
 }
+
+enum NotificationType {
+  NEW_FOLLOWER
+  NEW_REVIEW
+  BOOK_PUBLISHED
+  READING_MILESTONE
+  SYSTEM
+}
+
+enum BookFormat {
+  EPUB
+  PDF
+  TXT
+  CUSTOM
+}
+
+// ─────────────────────────────────────────
+// AUTH & USER
+// ─────────────────────────────────────────
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  password    String
+  name        String?
+  displayName String?
+  avatarUrl   String?
+  bio         String?
+  role        UserRole @default(READER)
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author          Author?
+  annotations     Annotation[]
+  reviews         UserReview[]
+  bookmarks       Bookmark[]
+  readingProgress ReadingProgress[]
+  readingSessions ReadingSession[]
+  wishlist        Book[]         @relation("UserWishlist")
+  notifications   Notification[]
+  following       Follow[]       @relation("UserFollowing")
+  followers       Follow[]       @relation("UserFollowers")
+
+  @@index([email])
+}
+
+// ─────────────────────────────────────────
+// AUTHOR & PUBLISHER
+// ─────────────────────────────────────────
+
+model Author {
+  id          String   @id @default(uuid())
+  userId      String?  @unique
+  penName     String
+  biography   String?
+  avatarUrl   String?
+  websiteUrl  String?
+  socialLinks Json?
+  isVerified  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user  User? @relation(fields: [userId], references: [id])
+  books Book[]
+
+  @@index([penName])
+}
+
+model Publisher {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  logoUrl     String?
+  websiteUrl  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  books Book[]
+}
+
+// ─────────────────────────────────────────
+// BOOK & CONTENT
+// ─────────────────────────────────────────
 
 model Book {
   id            String     @id @default(uuid())
   title         String
-  author        String
-  coverImage    String?
-  isSystemImage Boolean    @default(false)
+  slug          String     @unique
+  description   String?
+  coverImageUrl String?
   coverColor    String?
-  price         String?
-  category      String?
-  pdfUrl        String?
-  pages         String[]
+  isbn          String?    @unique
+  language      String     @default("tr")
+  price         Decimal?   @db.Decimal(10, 2)
+  isFree        Boolean    @default(false)
+  format        BookFormat @default(EPUB)
+  fileUrl       String?
+  fileSize      Int?
   pageCount     Int?
+  wordCount     Int?
+  publishedAt   DateTime?
+  status        BookStatus @default(DRAFT)
   metadata      Json?
-  status        BookStatus @default(UPLOADING)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  reviews      UserReview[]
-  annotations  Annotation[]
-  wishlistedBy User[]       @relation("UserWishlist")
+  // Foreign keys
+  authorId    String
+  publisherId String?
+
+  // Relations
+  author          Author            @relation(fields: [authorId], references: [id])
+  publisher       Publisher?        @relation(fields: [publisherId], references: [id])
+  chapters        Chapter[]
+  categories      CategoriesOnBooks[]
+  tags            TagsOnBooks[]
+  reviews         UserReview[]
+  annotations     Annotation[]
+  bookmarks       Bookmark[]
+  readingProgress ReadingProgress[]
+  readingSessions ReadingSession[]
+  wishlistedBy    User[]            @relation("UserWishlist")
+
+  @@index([title])
+  @@index([authorId])
+  @@index([status])
+  @@index([slug])
+}
+
+model Chapter {
+  id         String @id @default(uuid())
+  bookId     String
+  title      String
+  content    String @db.Text
+  orderIndex Int
+  wordCount  Int?
+
+  book        Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  annotations Annotation[]
+
+  @@unique([bookId, orderIndex])
+  @@index([bookId])
+}
+
+// ─────────────────────────────────────────
+// CATEGORIES & TAGS
+// ─────────────────────────────────────────
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  iconUrl     String?
+  parentId    String?
+
+  parent   Category?          @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[]         @relation("CategoryTree")
+  books    CategoriesOnBooks[]
+}
+
+model CategoriesOnBooks {
+  bookId     String
+  categoryId String
+
+  book     Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, categoryId])
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  books TagsOnBooks[]
+}
+
+model TagsOnBooks {
+  bookId String
+  tagId  String
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, tagId])
+}
+
+// ─────────────────────────────────────────
+// READING EXPERIENCE
+// ─────────────────────────────────────────
+
+model ReadingProgress {
+  id               String    @id @default(uuid())
+  userId           String
+  bookId           String
+  currentChapterId String?
+  currentPage      Int       @default(0)
+  progressPercent  Float     @default(0)
+  lastReadAt       DateTime  @default(now())
+  startedAt        DateTime  @default(now())
+  finishedAt       DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+  @@index([userId])
+}
+
+model ReadingSession {
+  id        String    @id @default(uuid())
+  userId    String
+  bookId    String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  duration  Int?
+  pagesRead Int       @default(0)
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@index([userId, bookId])
+}
+
+model Bookmark {
+  id         String   @id @default(uuid())
+  userId     String
+  bookId     String
+  chapterId  String?
+  pageNumber Int
+  title      String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@index([userId, bookId])
 }
 
 model Annotation {
   id         String   @id @default(uuid())
   bookId     String
   userId     String
+  chapterId  String?
   rangeStart Int
   rangeEnd   Int
   color      String   @default("yellow")
   note       String?
   pageNumber Int
+  isPublic   Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  book Book @relation(fields: [bookId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  book    Book     @relation(fields: [bookId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  chapter Chapter? @relation(fields: [chapterId], references: [id])
+
+  @@index([bookId, userId])
 }
 
 model UserReview {
@@ -71,9 +297,49 @@ model UserReview {
   bookId    String
   userId    String
   rating    Int
-  comment   String
+  title     String?
+  comment   String   @db.Text
+  isPublic  Boolean  @default(true)
+  likes     Int      @default(0)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   book Book @relation(fields: [bookId], references: [id])
   user User @relation(fields: [userId], references: [id])
+
+  @@unique([bookId, userId])
+  @@index([bookId])
+}
+
+// ─────────────────────────────────────────
+// SOCIAL
+// ─────────────────────────────────────────
+
+model Follow {
+  id          String   @id @default(uuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id])
+  following User @relation("UserFollowers", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
 }

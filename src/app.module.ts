@@ -4,7 +4,11 @@ import { BullModule } from '@nestjs/bullmq';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BooksModule } from './modules/books/books.module';
+import { AuthorsModule } from './modules/authors/authors.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { ReadingModule } from './modules/reading/reading.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { JamModule } from './jam/jam.module';
@@ -29,7 +33,11 @@ import { JamModule } from './jam/jam.module';
       }),
       inject: [ConfigService],
     }),
+    AuthModule,
     BooksModule,
+    AuthorsModule,
+    CategoriesModule,
+    ReadingModule,
     JamModule,
   ],
   controllers: [AppController],
