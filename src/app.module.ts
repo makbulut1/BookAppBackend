@@ -13,6 +13,7 @@ import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
 import { SocialModule } from './modules/social/social.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { WishlistModule } from './modules/wishlist/wishlist.module';
+import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -50,6 +51,7 @@ import { JamModule } from './jam/jam.module';
     SocialModule,
     NotificationsModule,
     WishlistModule,
+    UsersModule,
     JamModule,
   ],
   controllers: [AppController],

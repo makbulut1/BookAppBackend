@@ -52,7 +52,7 @@ npm run start:dev
 | Yazar | `elif@satirarasi.com` | `password123` |
 | Okuyucu | `okuyucu@satirarasi.com` | `password123` |
 
-## 📋 API Endpoint'leri (63 adet)
+## 📋 API Endpoint'leri (67 adet)
 
 ### Auth (`/auth`)
 | Metot | Yol | Açıklama | Yetki |
@@ -158,6 +158,14 @@ npm run start:dev
 | `DELETE` | `/wishlist/:bookId` | İstek listesinden çıkar | 🔒 JWT |
 | `GET` | `/wishlist` | İstek listem | 🔒 JWT |
 | `GET` | `/wishlist/:bookId/check` | İstek listesinde mi? | 🔒 JWT |
+
+### Users (`/users`) — Public
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `GET` | `/users/:id` | Kullanıcı public profili (isFollowing desteği) | Public |
+| `GET` | `/users/:id/reviews` | Kullanıcının public yorumları | Public |
+| `GET` | `/users/:id/annotations` | Kullanıcının public anotasyonları | Public |
+| `GET` | `/users/:id/shelf` | Kullanıcının okuduğu kitaplar | Public |
 
 ## 🗃️ Veritabanı Şeması
 
