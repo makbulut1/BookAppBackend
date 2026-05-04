@@ -52,7 +52,7 @@ npm run start:dev
 | Yazar | `elif@satirarasi.com` | `password123` |
 | Okuyucu | `okuyucu@satirarasi.com` | `password123` |
 
-## 📋 API Endpoint'leri (67 adet)
+## 📋 API Endpoint'leri (69 adet)
 
 ### Auth (`/auth`)
 | Metot | Yol | Açıklama | Yetki |
@@ -166,6 +166,12 @@ npm run start:dev
 | `GET` | `/users/:id/reviews` | Kullanıcının public yorumları | Public |
 | `GET` | `/users/:id/annotations` | Kullanıcının public anotasyonları | Public |
 | `GET` | `/users/:id/shelf` | Kullanıcının okuduğu kitaplar | Public |
+
+### Upload (`/upload`)
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `POST` | `/upload/avatar` | Profil fotoğrafı yükle | 🔒 JWT |
+| `POST` | `/upload/cover/:bookId` | Kitap kapağı yükle | 🔒 Sahip |
 
 ## 🗃️ Veritabanı Şeması
 
