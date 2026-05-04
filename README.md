@@ -52,7 +52,7 @@ npm run start:dev
 | Yazar | `elif@satirarasi.com` | `password123` |
 | Okuyucu | `okuyucu@satirarasi.com` | `password123` |
 
-## 📋 API Endpoint'leri (31 adet)
+## 📋 API Endpoint'leri (47 adet)
 
 ### Auth (`/auth`)
 | Metot | Yol | Açıklama | Yetki |
@@ -103,6 +103,35 @@ npm run start:dev
 | `GET` | `/reading/stats` | Okuma istatistikleri | 🔒 JWT |
 | `POST` | `/reading/sessions/start` | Oturum başlat | 🔒 JWT |
 | `PUT` | `/reading/sessions/:id/end` | Oturum bitir | 🔒 JWT |
+
+### Annotations (`/annotations`)
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `POST` | `/annotations` | Anotasyon / highlight oluştur | 🔒 JWT |
+| `GET` | `/annotations/book/:bookId` | Kitaptaki anotasyonlar (kendi + public) | 🔒 JWT |
+| `GET` | `/annotations/my` | Tüm anotasyonlarım | 🔒 JWT |
+| `PUT` | `/annotations/:id` | Anotasyon güncelle | 🔒 Sahip |
+| `DELETE` | `/annotations/:id` | Anotasyon sil | 🔒 Sahip |
+
+### Reviews (`/reviews`)
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `POST` | `/reviews` | Yorum yaz (kitap başına 1) | 🔒 JWT |
+| `GET` | `/reviews/book/:bookId` | Kitap yorumları + puan dağılımı | Public |
+| `GET` | `/reviews/my` | Tüm yorumlarım | 🔒 JWT |
+| `PUT` | `/reviews/:id` | Yorum güncelle | 🔒 Sahip |
+| `DELETE` | `/reviews/:id` | Yorum sil | 🔒 Sahip |
+| `POST` | `/reviews/:id/like` | Yorum beğen | 🔒 JWT |
+
+### Bookmarks (`/bookmarks`)
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `POST` | `/bookmarks` | Yer imi oluştur | 🔒 JWT |
+| `GET` | `/bookmarks` | Tüm yer imlerim | 🔒 JWT |
+| `GET` | `/bookmarks/book/:bookId` | Kitaptaki yer imleri | 🔒 JWT |
+| `DELETE` | `/bookmarks/:id` | Yer imi sil | 🔒 Sahip |
+| `DELETE` | `/bookmarks/book/:bookId` | Kitaptaki tüm yer imlerini sil | 🔒 Sahip |
+
 
 ## 🗃️ Veritabanı Şeması
 

@@ -7,6 +7,9 @@ import { BooksModule } from './modules/books/books.module';
 import { AuthorsModule } from './modules/authors/authors.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { ReadingModule } from './modules/reading/reading.module';
+import { AnnotationsModule } from './modules/annotations/annotations.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
+import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -38,6 +41,9 @@ import { JamModule } from './jam/jam.module';
     AuthorsModule,
     CategoriesModule,
     ReadingModule,
+    AnnotationsModule,
+    ReviewsModule,
+    BookmarksModule,
     JamModule,
   ],
   controllers: [AppController],
