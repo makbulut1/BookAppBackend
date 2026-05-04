@@ -37,6 +37,10 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(dto.password, 12);
 
+    // Generate default avatar URL
+    const defaultAvatarName = dto.displayName || dto.name || 'User';
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(defaultAvatarName)}&background=random&color=fff&size=256`;
+
     // Create user
     const user = await this.prisma.user.create({
       data: {
@@ -44,6 +48,7 @@ export class AuthService {
         password: hashedPassword,
         name: dto.name,
         displayName: dto.displayName,
+        avatarUrl,
       },
     });
 
@@ -141,6 +146,9 @@ export class AuthService {
       throw new ConflictException('Zaten bir yazar profiliniz var');
     }
 
+    // Generate default avatar URL for author
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(penName)}&background=random&color=fff&size=256`;
+
     // Create author profile and update user role in a transaction
     await this.prisma.$transaction([
       this.prisma.author.create({
@@ -148,6 +156,7 @@ export class AuthService {
           userId,
           penName,
           biography,
+          avatarUrl,
         },
       }),
       this.prisma.user.update({
