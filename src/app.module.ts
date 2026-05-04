@@ -10,6 +10,9 @@ import { ReadingModule } from './modules/reading/reading.module';
 import { AnnotationsModule } from './modules/annotations/annotations.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { BookmarksModule } from './modules/bookmarks/bookmarks.module';
+import { SocialModule } from './modules/social/social.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { WishlistModule } from './modules/wishlist/wishlist.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -44,6 +47,9 @@ import { JamModule } from './jam/jam.module';
     AnnotationsModule,
     ReviewsModule,
     BookmarksModule,
+    SocialModule,
+    NotificationsModule,
+    WishlistModule,
     JamModule,
   ],
   controllers: [AppController],

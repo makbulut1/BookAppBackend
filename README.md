@@ -52,7 +52,7 @@ npm run start:dev
 | Yazar | `elif@satirarasi.com` | `password123` |
 | Okuyucu | `okuyucu@satirarasi.com` | `password123` |
 
-## 📋 API Endpoint'leri (47 adet)
+## 📋 API Endpoint'leri (63 adet)
 
 ### Auth (`/auth`)
 | Metot | Yol | Açıklama | Yetki |
@@ -131,7 +131,33 @@ npm run start:dev
 | `GET` | `/bookmarks/book/:bookId` | Kitaptaki yer imleri | 🔒 JWT |
 | `DELETE` | `/bookmarks/:id` | Yer imi sil | 🔒 Sahip |
 | `DELETE` | `/bookmarks/book/:bookId` | Kitaptaki tüm yer imlerini sil | 🔒 Sahip |
+### Social (`/social`)
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `POST` | `/social/follow/:userId` | Takip et | 🔒 JWT |
+| `DELETE` | `/social/follow/:userId` | Takibi bırak | 🔒 JWT |
+| `GET` | `/social/followers` | Takipçilerim | 🔒 JWT |
+| `GET` | `/social/following` | Takip ettiklerim | 🔒 JWT |
+| `GET` | `/social/followers/:userId` | Kullanıcının takipçileri | 🔒 JWT |
+| `GET` | `/social/following/:userId` | Kullanıcının takip ettikleri | 🔒 JWT |
+| `GET` | `/social/is-following/:userId` | Takip durumu kontrolü | 🔒 JWT |
 
+### Notifications (`/notifications`)
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `GET` | `/notifications` | Bildirimlerim | 🔒 JWT |
+| `GET` | `/notifications/unread-count` | Okunmamış bildirim sayısı | 🔒 JWT |
+| `PUT` | `/notifications/:id/read` | Okundu işaretle | 🔒 JWT |
+| `PUT` | `/notifications/read-all` | Tümünü okundu yap | 🔒 JWT |
+| `DELETE` | `/notifications/:id` | Bildirim sil | 🔒 JWT |
+
+### Wishlist (`/wishlist`)
+| Metot | Yol | Açıklama | Yetki |
+|-------|-----|----------|-------|
+| `POST` | `/wishlist/:bookId` | İstek listesine ekle | 🔒 JWT |
+| `DELETE` | `/wishlist/:bookId` | İstek listesinden çıkar | 🔒 JWT |
+| `GET` | `/wishlist` | İstek listem | 🔒 JWT |
+| `GET` | `/wishlist/:bookId/check` | İstek listesinde mi? | 🔒 JWT |
 
 ## 🗃️ Veritabanı Şeması
 
