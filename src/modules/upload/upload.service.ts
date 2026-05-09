@@ -1,16 +1,21 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { S3Service } from '../storage/s3.service';
 
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private s3Service: S3Service,
+  ) {}
 
   async updateAvatar(userId: string, file: Express.Multer.File) {
     if (!file) throw new BadRequestException('Dosya yüklenemedi');
     
-    const avatarUrl = `/static/uploads/avatars/${file.filename}`;
+    const key = await this.s3Service.uploadFile(file, 'avatars');
+    const avatarUrl = this.s3Service.getFileUrl(key);
     
     await this.prisma.user.update({
       where: { id: userId },
@@ -29,7 +34,7 @@ export class UploadService {
       });
     }
 
-    this.logger.log(`Avatar updated for user ${userId}`);
+    this.logger.log(`Avatar updated for user ${userId} in MinIO`);
     return { message: 'Profil fotoğrafı güncellendi', avatarUrl };
   }
 
@@ -47,14 +52,15 @@ export class UploadService {
       throw new BadRequestException('Bu kitabın kapağını değiştirme yetkiniz yok');
     }
 
-    const coverImageUrl = `/static/uploads/covers/${file.filename}`;
+    const key = await this.s3Service.uploadFile(file, 'covers');
+    const coverImageUrl = this.s3Service.getFileUrl(key);
 
     await this.prisma.book.update({
       where: { id: bookId },
       data: { coverImageUrl },
     });
 
-    this.logger.log(`Cover updated for book ${bookId}`);
+    this.logger.log(`Cover updated for book ${bookId} in MinIO`);
     return { message: 'Kitap kapağı güncellendi', coverImageUrl };
   }
 }

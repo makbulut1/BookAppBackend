@@ -4,29 +4,13 @@ import {
   UseGuards, 
   UseInterceptors, 
   UploadedFile, 
-  Param, 
-  ParseFilePipe, 
-  MaxFileSizeValidator, 
-  FileTypeValidator 
+  Param,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { v4 as uuidv4 } from 'uuid';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards';
 import { CurrentUser } from '../../auth/decorators';
 import { UploadService } from './upload.service';
-
-const storageOptions = (dest: string) => ({
-  storage: diskStorage({
-    destination: `./public/uploads/${dest}`,
-    filename: (req, file, cb) => {
-      const randomName = uuidv4();
-      cb(null, `${randomName}${extname(file.originalname)}`);
-    },
-  }),
-});
 
 @ApiTags('upload')
 @UseGuards(JwtAuthGuard)
@@ -49,7 +33,7 @@ export class UploadController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file', storageOptions('avatars')))
+  @UseInterceptors(FileInterceptor('file'))
   uploadAvatar(
     @CurrentUser('id') userId: string,
     @UploadedFile() file: Express.Multer.File,
@@ -71,7 +55,7 @@ export class UploadController {
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file', storageOptions('covers')))
+  @UseInterceptors(FileInterceptor('file'))
   uploadCover(
     @CurrentUser('id') userId: string,
     @Param('bookId') bookId: string,
