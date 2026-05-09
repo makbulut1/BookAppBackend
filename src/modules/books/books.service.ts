@@ -3,12 +3,14 @@ import {
   NotFoundException,
   ForbiddenException,
   Logger,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { BookStatus, UserRole } from '@prisma/client';
 import { CreateBookDto, UpdateBookDto, CreateChapterDto } from './dto';
+import { S3Service } from '../storage/s3.service';
 
 @Injectable()
 export class BooksService {
@@ -16,8 +18,50 @@ export class BooksService {
 
   constructor(
     private prisma: PrismaService,
+    private s3Service: S3Service,
     @InjectQueue('pdf-processing') private pdfQueue: Queue,
   ) {}
+
+  async uploadBookFile(bookId: string, userId: string, file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Dosya yüklenemedi');
+
+    const book = await this.prisma.book.findUnique({
+      where: { id: bookId },
+      include: { author: true },
+    });
+
+    if (!book) throw new NotFoundException(`Kitap bulunamadı: ${bookId}`);
+
+    if (book.author.userId !== userId) {
+      throw new ForbiddenException('Bu kitabın dosyasını yükleme yetkiniz yok');
+    }
+
+    // 1. Upload to MinIO
+    const key = await this.s3Service.uploadFile(file, 'book-files');
+    const fileUrl = this.s3Service.getFileUrl(key);
+
+    // 2. Update Book record
+    const updatedBook = await this.prisma.book.update({
+      where: { id: bookId },
+      data: {
+        fileUrl,
+        status: BookStatus.PROCESSING,
+      },
+    });
+
+    // 3. Trigger BullMQ Job
+    await this.pdfQueue.add('process-pdf', {
+      bookId: book.id,
+      fileUrl: fileUrl,
+    });
+
+    this.logger.log(`Book ${bookId} file uploaded to MinIO and queued for processing`);
+
+    return {
+      message: 'Kitap dosyası yüklendi, işleme süreci başlatıldı',
+      fileUrl,
+    };
+  }
 
   /**
    * Create a new book (Author or Admin only)

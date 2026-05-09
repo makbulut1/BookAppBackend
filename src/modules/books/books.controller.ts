@@ -8,13 +8,18 @@ import {
   Param,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { BooksService } from './books.service';
 import { CreateBookDto, UpdateBookDto, CreateChapterDto } from './dto';
@@ -108,6 +113,32 @@ export class BooksController {
     @CurrentUser('role') role: UserRole,
   ) {
     return this.booksService.delete(id, userId, role);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/upload')
+  @ApiBearerAuth()
+  @Roles(UserRole.AUTHOR, UserRole.ADMIN)
+  @ApiOperation({ summary: 'Upload book file (PDF/EPUB) and trigger processing' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(
+    @Param('id') id: string,
+    @CurrentUser('id') userId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.booksService.uploadBookFile(id, userId, file);
   }
 
   // ─── Chapter Endpoints ──────────────────────
